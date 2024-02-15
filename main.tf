@@ -45,7 +45,7 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_alb" "example" {
-  name            = "example-alb"
+  name            ="${var.aws_alb}"
   security_groups = [aws_security_group.alb.id]
   subnets         = [aws_subnet.default_subnet_1.id, aws_subnet.default_subnet_2.id]
 
@@ -54,7 +54,7 @@ resource "aws_alb" "example" {
   }
     tags = {
 
-    deploymentID         = "${var.deploymentID}"
+    deploymentID         = 
 
     Environment = "Production"
 
