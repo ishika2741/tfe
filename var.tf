@@ -8,6 +8,3 @@ variable "access_key" {
 variable "secret_key" {
 }
 
-variable lbName {
-default = "exp-alb-2"
-}
