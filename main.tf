@@ -4,6 +4,12 @@ provider "aws" {
   secret_key = var.secret_key
 }
 
+variable "lbName" {
+  type    = string
+  description = "name of aws lb"
+}
+
+
 variable "deploymentID" {
   type    = string
   description = "Deployment ID for the ELB"
@@ -45,7 +51,7 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_alb" "example" {
-  name            =  var.lbName
+  name            = "${var.lbName}"
   security_groups = [aws_security_group.alb.id]
   subnets         = [aws_subnet.default_subnet_1.id, aws_subnet.default_subnet_2.id]
 
@@ -54,7 +60,7 @@ resource "aws_alb" "example" {
   }
     tags = {
 
-    deploymentID         = var.deploymentID
+    deploymentID         = "${var.deploymentID}"
 
     Environment = "Production"
 
