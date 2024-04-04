@@ -1,17 +1,11 @@
 provider "aws" {
-  region = var.region
+  region     = var.region
   access_key = var.access_key
   secret_key = var.secret_key
 }
 
-variable "lbName" {
-  type    = string
-  description = "name of aws lb"
-}
-
-
 variable "deploymentID" {
-  type    = string
+  type        = string
   description = "Deployment ID for the ELB"
 }
 
@@ -20,15 +14,15 @@ resource "aws_vpc" "default" {
 }
 
 resource "aws_subnet" "default_subnet_1" {
-  vpc_id                  = aws_vpc.default.id
-  cidr_block              = "10.0.0.0/24"
-  availability_zone       = "us-east-1a"
+  vpc_id            = aws_vpc.default.id
+  cidr_block        = "10.0.0.0/24"
+  availability_zone = "us-east-1a"
 }
 
 resource "aws_subnet" "default_subnet_2" {
-  vpc_id                  = aws_vpc.default.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1b"
+  vpc_id            = aws_vpc.default.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1b"
 }
 
 resource "aws_internet_gateway" "example" {
@@ -43,47 +37,47 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.example.id
   }
 }
-resource "aws_security_group" "alb" {
-  name        = "alb-security-group"
-  vpc_id      = aws_vpc.default.id
 
+resource "aws_security_group" "elb" {
+  name        = "elb-security-group"
+  vpc_id      = aws_vpc.default.id
+  
   # Define security group rules as needed
 }
 
-resource "aws_alb" "example" {
-  name            = "${var.lbName}"
-  security_groups = [aws_security_group.alb.id]
-  subnets         = [aws_subnet.default_subnet_1.id, aws_subnet.default_subnet_2.id]
+resource "aws_elb" "example" {
+  name               = "example-elb"
+  availability_zones = ["us-east-1a", "us-east-1b"]
+  security_groups    = [aws_security_group.elb.id]
+  subnets            = [aws_subnet.default_subnet_1.id, aws_subnet.default_subnet_2.id]
 
-  lifecycle {
-    create_before_destroy = true
+  listener {
+    instance_port     = 80
+    instance_protocol = "HTTP"
+    lb_port           = 80
+    lb_protocol       = "HTTP"
   }
-    tags = {
 
-    deploymentID         = "${var.deploymentID}"
+  health_check {
+    target              = "HTTP:80/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
 
-    Environment = "Production"
-
+  tags = {
+    deploymentID = "${var.deploymentID}"
+    Environment  = "Production"
   }
 }
 
-/*resource "aws_alb_listener" "example_listener" {
-  load_balancer_arn = aws_alb.example.arn
-  port              = 80
-  protocol          = "HTTP"
-  default_action {
-    type             = "fixed-response"
-    fixed_response {
-      content_type    = "text/plain"
-      message_body    = "OK"
-      status_code     = "200"
-    }
-  }
-  tags = {
-
-    deploymentID         = "${var.deploymentID}"
-
-    Environment = "Production"
-
-  }
-}*/
+resource "aws_security_group_rule" "elb_ingress" {
+  type        = "ingress"
+  from_port   = 80
+  to_port     = 80
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  
+  security_group_id = aws_security_group.elb.id
+}
