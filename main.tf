@@ -67,8 +67,8 @@ resource "aws_security_group" "elb" {
 
 resource "aws_elb" "example" {
   name            = "example-elb"
-  availability_zones = ["us-east-1a", "us-east-1b"]
   security_groups = [aws_security_group.elb.id]
+subnets         = [aws_subnet.default_subnet_1.id, aws_subnet.default_subnet_2.id]
 
   listener {
     instance_port     = 80
