@@ -11,22 +11,38 @@ variable "deploymentID" {
 
 resource "aws_vpc" "default" {
   cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "DefaultVPC"
+  }
 }
 
 resource "aws_subnet" "default_subnet_1" {
   vpc_id            = aws_vpc.default.id
   cidr_block        = "10.0.0.0/24"
   availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "DefaultSubnet1"
+  }
 }
 
 resource "aws_subnet" "default_subnet_2" {
   vpc_id            = aws_vpc.default.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "DefaultSubnet2"
+  }
 }
 
 resource "aws_internet_gateway" "example" {
   vpc_id = aws_vpc.default.id
+
+  tags = {
+    Name = "DefaultInternetGateway"
+  }
 }
 
 resource "aws_route_table" "public" {
@@ -35,6 +51,10 @@ resource "aws_route_table" "public" {
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.example.id
+  }
+
+  tags = {
+    Name = "PublicRouteTable"
   }
 }
 
